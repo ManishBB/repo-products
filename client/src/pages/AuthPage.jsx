@@ -5,11 +5,11 @@ import Register from "../components/Register";
 const AuthPage = () => {
     const [isRegister, setIsRegister] = useState(true);
     return (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center h-screen">
             {isRegister ? (
                 <Register setIsRegister={setIsRegister} />
             ) : (
-                <Login setIsRegister={setIsRegister}/>
+                <Login setIsRegister={setIsRegister} />
             )}
         </div>
     );

@@ -10,7 +10,7 @@ const Register = ({ setIsRegister }) => {
     const [password, setPassword] = useState();
     const [role, setRole] = useState();
 
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -46,11 +46,10 @@ const Register = ({ setIsRegister }) => {
                     role,
                 }
             );
-            const { data } = response.data;
 
-            console.log(data);
+            toast.success("User registered successfully, log in to your account");
 
-            // navigate("/login");
+            setIsRegister(false);
 
             // Clear form
             setEmail("");

@@ -22,6 +22,58 @@ const getAllProducts = async (req, res) => {
         );
 };
 
+const getProduct = async (req, res) => {
+    const userEmail = req.user.email;
+
+    if (!userEmail) throw new ApiError(400, "Unauthorized Access");
+
+    const { productId } = req.params;
+
+    const product = await Product.findById(productId);
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, product, "Products fetched successfully"));
+};
+
+const updateProduct = async (req, res) => {
+    if (req.user.role !== "admin") {
+        throw new ApiError(404, "Unauthorized!");
+    }
+
+    const {
+        newProductName,
+        newProductImage,
+        newProductDescription,
+        newProductDepartment,
+        newProductPrice,
+    } = req.body;
+
+    const product = await Product.findOneAndUpdate(
+        { _id: req.body.productId },
+        {
+            $set: {
+                productName: newProductName,
+                productImage: newProductImage,
+                productDescription: newProductDescription,
+                productDepartment: newProductDepartment,
+                productPrice: newProductPrice,
+            },
+        }
+    );
+
+    const createdProduct = await Product.findById(product._id);
+
+    if (!createdProduct)
+        throw new ApiError(500, "Something went wrong while updating product");
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, createdProduct, "Product updated successfully")
+        );
+};
+
 const changeProductDetails = async (req, res) => {
     const userEmail = req.user.email;
 
@@ -29,11 +81,11 @@ const changeProductDetails = async (req, res) => {
 
     const {
         productId,
-        productName,
-        price,
-        image,
-        productDescription,
-        department,
+        newProductName,
+        newProductImage,
+        newProductDescription,
+        newProductDepartment,
+        newProductPrice,
         changedFields,
     } = req.body;
 
@@ -41,11 +93,11 @@ const changeProductDetails = async (req, res) => {
         productId: productId,
         teamMemberId: req.user._id,
         changes: {
-            productName: productName,
-            price: price,
-            image: image,
-            productDescription: productDescription,
-            department: department,
+            productName: newProductName,
+            price: newProductPrice,
+            image: newProductImage,
+            productDescription: newProductDescription,
+            department: newProductDepartment,
         },
         changedFields: changedFields,
     });
@@ -179,9 +231,7 @@ const getPendingReviews = async (req, res) => {
 
 const getReviewSubmissions = async (req, res) => {
     try {
-        const userEmail = req.user.email;
-
-        if (!userEmail || req.user.role !== "admin")
+        if (req.user.role !== "teamMember")
             throw new ApiError(400, "Unauthorized Access");
 
         // Aggregate pipeline to match documents with status "pending"
@@ -272,6 +322,7 @@ const getAdminProfileStats = async (req, res) => {
 
 export {
     getAllProducts,
+    updateProduct,
     changeProductDetails,
     approvedReviewProduct,
     rejectReviewProduct,
@@ -279,4 +330,5 @@ export {
     getReviewSubmissions,
     getTeamMemberProfileStats,
     getAdminProfileStats,
+    getProduct,
 };
